@@ -162,12 +162,18 @@ class ParadigmFiller:
             analysis = lookup_strings[i]
             results_for_cell = sorted(results[analysis])
             # todo: use all results
-            first_result = sorted(results_with_boundaries[analysis])[0]
+            try:
+                first_result = sorted(results_with_boundaries[analysis])[0]
+            except IndexError:
+                print(f"Can not generate morpheme boundary for {analysis}")
+                first_result = ""
             # TODO: this should actually produce TWO rows!
             inflection_cell = row[col_ind]
             assert isinstance(inflection_cell, InflectionCell)
             inflection_cell.inflection = " / ".join(results_for_cell)
-            inflection_cell.morphemes = tuple(re.split("<|>", first_result))
+            separated_result = re.split("[<>]", first_result)
+            assert separated_result is not None
+            inflection_cell.morphemes = tuple(separated_result)
             inflection_cell.frequency = self._frequency.get(analysis, 0)
 
         return tables
