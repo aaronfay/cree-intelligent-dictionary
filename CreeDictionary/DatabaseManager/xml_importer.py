@@ -4,6 +4,8 @@ from collections import defaultdict
 from pathlib import Path
 from typing import DefaultDict, Dict, List, NamedTuple, Set, Tuple
 
+from django.conf import settings
+
 from API.models import Definition, DictionarySource, EnglishKeyword, Wordform
 from colorama import init
 from DatabaseManager import xml_entry_lemma_finder
@@ -222,6 +224,15 @@ def find_latest_xml_files(dir_name: Path) -> Tuple[Path, Path]:
     )
 
 
+def import_sources():
+    """
+    Import dictionary sources to the dictionary.
+    """
+
+    for src in settings.MORPHODICT_SOURCES:
+        DictionarySource(**src).save()
+
+
 @timed()
 def import_xmls(dir_name: Path, multi_processing: int = 1, verbose=True):
     """
@@ -243,6 +254,15 @@ def import_xmls(dir_name: Path, multi_processing: int = 1, verbose=True):
 
     with open(crkeng_file_path) as f:
         crkeng_xml = IndexedXML.from_xml_file(f)
+
+    #     Note the source element from the XML file is not used:
+    #
+    #     <source id="CW">
+    #         <title>Cree : Words / nehiyawewin : itwēwina</title>
+    #     </source>
+    #
+    #     The sources specified in the settings are imported
+    import_sources()
 
     source_abbreviations = crkeng_xml.source_abbreviations
 
@@ -451,3 +471,10 @@ def import_xmls(dir_name: Path, multi_processing: int = 1, verbose=True):
     logger.info("Inserting English keywords to database...")
     EnglishKeyword.objects.bulk_create(db_keywords)
     logger.info("Done inserting.")
+
+    # Convert the sources (stored as a string) to citations:
+    for dfn in Definition.objects.all():
+        source_ids = sorted(source.abbrv for source in dfn.citations.all())
+        for source_id in source_ids:
+            dfn.citations.add(source_id)
+        dfn.save()

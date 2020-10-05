@@ -1,3 +1,4 @@
+from django.core.management import call_command
 from django.http import JsonResponse
 
 # todo: update api documentation
@@ -12,3 +13,7 @@ def translate_cree(request, query_string: str) -> JsonResponse:
     """
     # todo (for matt): rewrite this
     pass
+
+
+def import_xml(request):
+    call_command("migrate")

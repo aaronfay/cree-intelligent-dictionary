@@ -4,6 +4,9 @@ from argparse import ArgumentParser
 from os import environ
 from pathlib import Path
 
+from DatabaseManager.affix_search_trie_builder import initialize_affix_search
+from DatabaseManager.morpheme_ranking_reader import read_morpheme_rankings
+from DatabaseManager.preverb_dict_builder import initialize_preverb_search
 from DatabaseManager.test_db_builder import build_test_xml
 from DatabaseManager.xml_importer import import_xmls
 from utils import shared_res_dir
@@ -58,6 +61,11 @@ def cmd_entry(argv=None):
         import_xmls(
             shared_res_dir / "test_dictionaries", args.process_count,
         )
+
+        initialize_preverb_search()
+        initialize_affix_search()
+        read_morpheme_rankings()
+
     else:
         raise NotImplementedError
 

@@ -62,6 +62,7 @@ _urlpatterns = [
         api_views.translate_cree,
         "cree-dictionary-word-translation-api",
     ),
+    ("admin/import", api_views.import_xml, "ssss"),
     ("admin/", admin.site.urls, "admin"),
     ("", include("morphodict.urls"), "cree-dictionary-change-orthography",),
 ]
